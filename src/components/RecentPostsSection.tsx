@@ -3,72 +3,15 @@ import { ItemCard } from "@/components/ItemCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-// Mock data for recent posts
-const recentItems = [
-  {
-    id: "1",
-    title: "iPhone 15 Pro Max",
-    category: "Electronics",
-    date: "Dec 20, 2025",
-    location: "Library, 2nd Floor",
-    image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=300&fit=crop",
-    status: "lost" as const,
-    description: "Black iPhone 15 Pro Max with blue silicone case",
-  },
-  {
-    id: "2",
-    title: "Student ID Card",
-    category: "ID Card",
-    date: "Dec 19, 2025",
-    location: "Cafeteria",
-    image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=300&fit=crop",
-    status: "found" as const,
-    description: "Found near the main entrance of the cafeteria",
-  },
-  {
-    id: "3",
-    title: "MacBook Charger",
-    category: "Electronics",
-    date: "Dec 18, 2025",
-    location: "Computer Lab B",
-    image: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400&h=300&fit=crop",
-    status: "found" as const,
-    description: "USB-C MagSafe charger, 67W",
-  },
-  {
-    id: "4",
-    title: "Black Wallet",
-    category: "Wallet",
-    date: "Dec 17, 2025",
-    location: "Sports Complex",
-    image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&h=300&fit=crop",
-    status: "lost" as const,
-    description: "Leather wallet with cards inside",
-  },
-  {
-    id: "5",
-    title: "AirPods Pro",
-    category: "Electronics",
-    date: "Dec 16, 2025",
-    location: "Lecture Hall A",
-    image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400&h=300&fit=crop",
-    status: "lost" as const,
-    description: "White AirPods Pro 2nd generation with case",
-  },
-  {
-    id: "6",
-    title: "Car Keys",
-    category: "Keys",
-    date: "Dec 15, 2025",
-    location: "Parking Lot C",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-    status: "found" as const,
-    description: "Honda car keys with keychain",
-  },
-];
+import { useItems } from "@/hooks/useItems";
+import { format } from "date-fns";
 
 export function RecentPostsSection() {
+  const { data: items, isLoading } = useItems();
+
+  // Get most recent 6 items
+  const recentItems = items?.slice(0, 6) || [];
+
   return (
     <section className="py-20 px-4 relative">
       {/* Background Elements */}
@@ -93,19 +36,38 @@ export function RecentPostsSection() {
         </motion.div>
 
         {/* Items Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {recentItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <ItemCard {...item} />
-            </motion.div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : recentItems.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {recentItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <ItemCard
+                  id={item.id}
+                  title={item.title}
+                  category={item.category}
+                  date={format(new Date(item.item_date), "MMM d, yyyy")}
+                  location={item.location}
+                  image={item.image_url || "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=300&fit=crop"}
+                  status={item.status as "lost" | "found"}
+                  description={item.description || undefined}
+                />
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 mb-12">
+            <p className="text-muted-foreground">No items reported yet. Be the first to post!</p>
+          </div>
+        )}
 
         {/* View All Button */}
         <motion.div

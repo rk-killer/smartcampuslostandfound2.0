@@ -5,8 +5,10 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ItemCard } from "@/components/ItemCard";
-import { Search, Filter, X, SlidersHorizontal } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useItems } from "@/hooks/useItems";
+import { Search, Filter, X, SlidersHorizontal, Calendar, MapPin, Mail } from "lucide-react";
+import { format } from "date-fns";
 
 const categories = [
   "All",
@@ -22,110 +24,16 @@ const categories = [
 
 const statusFilters = ["All", "Lost", "Found"];
 
-// Mock data
-const allItems = [
-  {
-    id: "1",
-    title: "iPhone 15 Pro Max",
-    category: "Electronics",
-    date: "Dec 20, 2025",
-    location: "Library, 2nd Floor",
-    image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=300&fit=crop",
-    status: "lost" as const,
-    description: "Black iPhone 15 Pro Max with blue silicone case",
-  },
-  {
-    id: "2",
-    title: "Student ID Card",
-    category: "ID Card",
-    date: "Dec 19, 2025",
-    location: "Cafeteria",
-    image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=300&fit=crop",
-    status: "found" as const,
-    description: "Found near the main entrance of the cafeteria",
-  },
-  {
-    id: "3",
-    title: "MacBook Charger",
-    category: "Electronics",
-    date: "Dec 18, 2025",
-    location: "Computer Lab B",
-    image: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400&h=300&fit=crop",
-    status: "found" as const,
-    description: "USB-C MagSafe charger, 67W",
-  },
-  {
-    id: "4",
-    title: "Black Wallet",
-    category: "Wallet",
-    date: "Dec 17, 2025",
-    location: "Sports Complex",
-    image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&h=300&fit=crop",
-    status: "lost" as const,
-    description: "Leather wallet with cards inside",
-  },
-  {
-    id: "5",
-    title: "AirPods Pro",
-    category: "Electronics",
-    date: "Dec 16, 2025",
-    location: "Lecture Hall A",
-    image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400&h=300&fit=crop",
-    status: "lost" as const,
-    description: "White AirPods Pro 2nd generation with case",
-  },
-  {
-    id: "6",
-    title: "Car Keys",
-    category: "Keys",
-    date: "Dec 15, 2025",
-    location: "Parking Lot C",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-    status: "found" as const,
-    description: "Honda car keys with keychain",
-  },
-  {
-    id: "7",
-    title: "Textbook - Calculus",
-    category: "Books",
-    date: "Dec 14, 2025",
-    location: "Room 302, Science Building",
-    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop",
-    status: "found" as const,
-    description: "Calculus Early Transcendentals, 8th Edition",
-  },
-  {
-    id: "8",
-    title: "Blue Backpack",
-    category: "Others",
-    date: "Dec 13, 2025",
-    location: "Bus Stop",
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop",
-    status: "lost" as const,
-    description: "Navy blue Jansport backpack with laptop compartment",
-  },
-];
-
 export default function MyMatch() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredItems = allItems.filter((item) => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === "All" || item.category === selectedCategory;
-
-    const matchesStatus =
-      selectedStatus === "All" ||
-      item.status.toLowerCase() === selectedStatus.toLowerCase();
-
-    return matchesSearch && matchesCategory && matchesStatus;
+  const { data: items, isLoading } = useItems({
+    status: selectedStatus,
+    category: selectedCategory,
+    search: searchQuery,
   });
 
   const clearFilters = () => {
@@ -293,23 +201,92 @@ export default function MyMatch() {
             <p className="text-sm text-muted-foreground">
               Showing{" "}
               <span className="text-primary font-semibold">
-                {filteredItems.length}
+                {items?.length || 0}
               </span>{" "}
-              {filteredItems.length === 1 ? "item" : "items"}
+              {items?.length === 1 ? "item" : "items"}
             </p>
           </motion.div>
 
           {/* Items Grid */}
-          {filteredItems.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-20">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : items && items.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredItems.map((item, index) => (
+              {items.map((item, index) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + index * 0.05 }}
+                  whileHover={{ y: -5 }}
                 >
-                  <ItemCard {...item} />
+                  <Card className="overflow-hidden group hover:border-primary/50 hover:shadow-[0_0_30px_hsl(var(--primary)/0.15)] h-full">
+                    {/* Image */}
+                    <div className="relative h-48 overflow-hidden bg-muted">
+                      {item.image_url ? (
+                        <img
+                          src={item.image_url}
+                          alt={item.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Search className="w-12 h-12 text-muted-foreground/30" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                      <Badge
+                        variant={item.status === "lost" ? "lost" : "found"}
+                        className="absolute top-3 right-3"
+                      >
+                        {item.status}
+                      </Badge>
+                    </div>
+
+                    <CardContent className="p-5">
+                      {/* Title & Category */}
+                      <div className="mb-3">
+                        <h3 className="font-display font-semibold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                          {item.title}
+                        </h3>
+                        <Badge variant="neon" className="mt-2 text-xs">
+                          {item.category}
+                        </Badge>
+                      </div>
+
+                      {/* Description */}
+                      {item.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                          {item.description}
+                        </p>
+                      )}
+
+                      {/* Meta Info */}
+                      <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-3.5 h-3.5 text-primary" />
+                          <span>{format(new Date(item.item_date), "MMM d, yyyy")}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-secondary" />
+                          <span className="line-clamp-1">{item.location}</span>
+                        </div>
+                      </div>
+
+                      {/* Contact */}
+                      <div className="mt-4 pt-3 border-t border-border">
+                        <a
+                          href={`mailto:${item.contact_email}`}
+                          className="flex items-center gap-2 text-sm text-primary hover:underline"
+                        >
+                          <Mail className="w-4 h-4" />
+                          Contact Poster
+                        </a>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </div>
@@ -326,11 +303,15 @@ export default function MyMatch() {
                 No items found
               </h3>
               <p className="text-muted-foreground mb-4">
-                Try adjusting your search or filters
+                {hasActiveFilters
+                  ? "Try adjusting your search or filters"
+                  : "No items have been reported yet"}
               </p>
-              <Button variant="outline" onClick={clearFilters}>
-                Clear Filters
-              </Button>
+              {hasActiveFilters && (
+                <Button variant="outline" onClick={clearFilters}>
+                  Clear Filters
+                </Button>
+              )}
             </motion.div>
           )}
         </div>

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ImageUpload";
 import { MapPin, Calendar, Tag, FileText, Send, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCreateItem, useUploadImage } from "@/hooks/useItems";
 
 const categories = [
   "ID Card",
@@ -22,6 +24,11 @@ const categories = [
 ];
 
 export default function ReportFound() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const createItem = useCreateItem();
+  const uploadImage = useUploadImage();
+
   const [formData, setFormData] = useState({
     itemName: "",
     category: "",
@@ -31,17 +38,37 @@ export default function ReportFound() {
     contact: "",
   });
   const [image, setImage] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (user?.email) {
+      setFormData((prev) => ({ ...prev, contact: user.email || "" }));
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    let imageUrl: string | undefined;
 
-    toast.success("Found item reported successfully!", {
-      description: "The owner will be notified if there's a match.",
+    if (image) {
+      imageUrl = await uploadImage.mutateAsync(image);
+    }
+
+    await createItem.mutateAsync({
+      title: formData.itemName,
+      category: formData.category,
+      description: formData.description,
+      status: "found",
+      location: formData.location,
+      item_date: formData.date,
+      image_url: imageUrl,
+      contact_email: formData.contact,
     });
 
     // Reset form
@@ -51,10 +78,11 @@ export default function ReportFound() {
       description: "",
       date: "",
       location: "",
-      contact: "",
+      contact: user?.email || "",
     });
     setImage(null);
-    setIsSubmitting(false);
+
+    navigate("/my-match");
   };
 
   const handleInputChange = (
@@ -62,6 +90,16 @@ export default function ReportFound() {
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const isSubmitting = createItem.isPending || uploadImage.isPending;
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

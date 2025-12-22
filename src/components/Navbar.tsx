@@ -1,8 +1,9 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, Menu, X, User, LogIn } from "lucide-react";
+import { Search, Menu, X, User, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -14,7 +15,14 @@ const navLinks = [
 
 export function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <motion.header
@@ -63,18 +71,35 @@ export function Navbar() {
 
         {/* Auth Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/auth">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <LogIn className="w-4 h-4" />
-              Login
-            </Button>
-          </Link>
-          <Link to="/auth?mode=signup">
-            <Button variant="outline" size="sm" className="gap-2">
-              <User className="w-4 h-4" />
-              Sign Up
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              <Link to="/profile">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="w-4 h-4" />
+                  Profile
+                </Button>
+              </Link>
+              <Button variant="outline" size="sm" className="gap-2" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <LogIn className="w-4 h-4" />
+                  Login
+                </Button>
+              </Link>
+              <Link to="/auth?mode=signup">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <User className="w-4 h-4" />
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -110,18 +135,43 @@ export function Navbar() {
               </Link>
             ))}
             <div className="flex gap-2 mt-2 pt-2 border-t border-border">
-              <Link to="/auth" className="flex-1" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" size="sm" className="w-full gap-2">
-                  <LogIn className="w-4 h-4" />
-                  Login
-                </Button>
-              </Link>
-              <Link to="/auth?mode=signup" className="flex-1" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full gap-2">
-                  <User className="w-4 h-4" />
-                  Sign Up
-                </Button>
-              </Link>
+              {user ? (
+                <>
+                  <Link to="/profile" className="flex-1" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" size="sm" className="w-full gap-2">
+                      <User className="w-4 h-4" />
+                      Profile
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={() => {
+                      handleSignOut();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth" className="flex-1" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" size="sm" className="w-full gap-2">
+                      <LogIn className="w-4 h-4" />
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/auth?mode=signup" className="flex-1" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full gap-2">
+                      <User className="w-4 h-4" />
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </motion.div>

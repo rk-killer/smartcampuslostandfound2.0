@@ -59,6 +59,7 @@ export function RecentPostsSection() {
                   image={item.image_url || "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=300&fit=crop"}
                   status={item.status as "lost" | "found"}
                   description={item.description || undefined}
+                  isResolved={item.is_resolved}
                 />
               </motion.div>
             ))}

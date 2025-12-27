@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Eye } from "lucide-react";
+import { Calendar, MapPin, Eye, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface ItemCardProps {
@@ -13,6 +13,7 @@ interface ItemCardProps {
   image: string;
   status: "lost" | "found";
   description?: string;
+  isResolved?: boolean;
 }
 
 export function ItemCard({
@@ -24,6 +25,7 @@ export function ItemCard({
   image,
   status,
   description,
+  isResolved,
 }: ItemCardProps) {
   return (
     <motion.div
@@ -43,12 +45,22 @@ export function ItemCard({
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-            <Badge
-              variant={status === "lost" ? "lost" : "found"}
-              className="absolute top-3 right-3"
-            >
-              {status === "lost" ? "Lost" : "Found"}
-            </Badge>
+            {isResolved ? (
+              <Badge
+                variant="secondary"
+                className="absolute top-3 right-3 gap-1 bg-secondary/90"
+              >
+                <CheckCircle className="w-3 h-3" />
+                Resolved
+              </Badge>
+            ) : (
+              <Badge
+                variant={status === "lost" ? "lost" : "found"}
+                className="absolute top-3 right-3"
+              >
+                {status === "lost" ? "Lost" : "Found"}
+              </Badge>
+            )}
           </div>
 
           <CardContent className="p-5">

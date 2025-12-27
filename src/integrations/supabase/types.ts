@@ -25,7 +25,9 @@ export type Database = {
           is_resolved: boolean
           item_date: string
           location: string
+          resolved_at: string | null
           status: string
+          success_story: string | null
           title: string
           updated_at: string
           user_id: string
@@ -40,7 +42,9 @@ export type Database = {
           is_resolved?: boolean
           item_date: string
           location: string
+          resolved_at?: string | null
           status: string
+          success_story?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -55,12 +59,52 @@ export type Database = {
           is_resolved?: boolean
           item_date?: string
           location?: string
+          resolved_at?: string | null
           status?: string
+          success_story?: string | null
           title?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          item_id: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          item_id?: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          item_id?: string | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

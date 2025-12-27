@@ -4,7 +4,7 @@
 
 ## Project info
 
-**URL**: https://smartcampuslostandfound20-c423--8080--365214aa.local-credentialless.webcontainer.io/
+**URL**: https://smartcampuslostandfound.lovable.app
 
 ## How can I edit this code?
 

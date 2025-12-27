@@ -15,6 +15,8 @@ export interface Item {
   image_url: string | null;
   contact_email: string;
   is_resolved: boolean;
+  resolved_at: string | null;
+  success_story: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -109,6 +111,48 @@ export function useCreateItem() {
     },
     onError: (error) => {
       toast.error("Failed to report item", {
+        description: error.message,
+      });
+    },
+  });
+}
+
+export function useResolveItem() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      itemId,
+      successStory,
+    }: {
+      itemId: string;
+      successStory?: string;
+    }) => {
+      if (!user) throw new Error("Must be logged in to resolve an item");
+
+      const { data, error } = await supabase
+        .from("items")
+        .update({
+          is_resolved: true,
+          resolved_at: new Date().toISOString(),
+          success_story: successStory || null,
+        })
+        .eq("id", itemId)
+        .eq("user_id", user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Item;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      queryClient.invalidateQueries({ queryKey: ["user-items"] });
+      toast.success("Item marked as resolved!");
+    },
+    onError: (error) => {
+      toast.error("Failed to resolve item", {
         description: error.message,
       });
     },

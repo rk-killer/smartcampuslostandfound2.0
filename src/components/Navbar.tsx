@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, Menu, X, User, LogIn, LogOut } from "lucide-react";
+import { Search, Menu, X, User, LogIn, LogOut, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUnreadCount } from "@/hooks/useMessages";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -18,6 +20,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { data: unreadCount } = useUnreadCount();
 
   const handleSignOut = async () => {
     await signOut();
@@ -73,6 +76,17 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
+              <Link to="/messages">
+                <Button variant="ghost" size="sm" className="gap-2 relative">
+                  <MessageCircle className="w-4 h-4" />
+                  Messages
+                  {unreadCount && unreadCount > 0 ? (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                      {unreadCount}
+                    </Badge>
+                  ) : null}
+                </Button>
+              </Link>
               <Link to="/profile">
                 <Button variant="ghost" size="sm" className="gap-2">
                   <User className="w-4 h-4" />
@@ -137,6 +151,17 @@ export function Navbar() {
             <div className="flex gap-2 mt-2 pt-2 border-t border-border">
               {user ? (
                 <>
+                  <Link to="/messages" className="flex-1" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" size="sm" className="w-full gap-2 relative">
+                      <MessageCircle className="w-4 h-4" />
+                      Messages
+                      {unreadCount && unreadCount > 0 ? (
+                        <Badge className="h-5 w-5 p-0 flex items-center justify-center text-xs ml-1">
+                          {unreadCount}
+                        </Badge>
+                      ) : null}
+                    </Button>
+                  </Link>
                   <Link to="/profile" className="flex-1" onClick={() => setIsOpen(false)}>
                     <Button variant="ghost" size="sm" className="w-full gap-2">
                       <User className="w-4 h-4" />

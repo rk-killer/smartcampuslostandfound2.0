@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserItems } from "@/hooks/useItems";
-import { User, Mail, Calendar, LogOut, Package } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { User, Mail, Calendar, LogOut, Package, CheckCircle, MessageCircle } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { format } from "date-fns";
 
@@ -39,6 +39,7 @@ export default function Profile() {
 
   const lostItems = userItems?.filter((item) => item.status === "lost") || [];
   const foundItems = userItems?.filter((item) => item.status === "found") || [];
+  const resolvedItems = userItems?.filter((item) => item.is_resolved) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -94,14 +95,22 @@ export default function Profile() {
                       </div>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={handleSignOut}
-                    className="gap-2"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Link to="/messages">
+                      <Button variant="outline" className="gap-2 w-full">
+                        <MessageCircle className="w-4 h-4" />
+                        Messages
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      onClick={handleSignOut}
+                      className="gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -112,14 +121,14 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-2 gap-4 mb-8"
+            className="grid grid-cols-3 gap-4 mb-8"
           >
             <Card className="hover:border-destructive/50 transition-colors">
               <CardContent className="p-6 text-center">
                 <div className="text-3xl font-display font-bold text-destructive mb-1">
                   {lostItems.length}
                 </div>
-                <div className="text-sm text-muted-foreground">Lost Items Posted</div>
+                <div className="text-sm text-muted-foreground">Lost Items</div>
               </CardContent>
             </Card>
             <Card className="hover:border-secondary/50 transition-colors">
@@ -127,7 +136,15 @@ export default function Profile() {
                 <div className="text-3xl font-display font-bold text-secondary mb-1">
                   {foundItems.length}
                 </div>
-                <div className="text-sm text-muted-foreground">Found Items Posted</div>
+                <div className="text-sm text-muted-foreground">Found Items</div>
+              </CardContent>
+            </Card>
+            <Card className="hover:border-primary/50 transition-colors">
+              <CardContent className="p-6 text-center">
+                <div className="text-3xl font-display font-bold text-primary mb-1">
+                  {resolvedItems.length}
+                </div>
+                <div className="text-sm text-muted-foreground">Resolved</div>
               </CardContent>
             </Card>
           </motion.div>
@@ -153,9 +170,10 @@ export default function Profile() {
                 ) : userItems && userItems.length > 0 ? (
                   <div className="space-y-4">
                     {userItems.map((item) => (
-                      <div
+                      <Link
                         key={item.id}
-                        className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 border border-border hover:border-primary/30 transition-colors"
+                        to={`/item/${item.id}`}
+                        className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 border border-border hover:border-primary/30 transition-colors block"
                       >
                         {item.image_url && (
                           <img
@@ -165,17 +183,24 @@ export default function Profile() {
                           />
                         )}
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h3 className="font-semibold">{item.title}</h3>
-                            <Badge variant={item.status === "lost" ? "lost" : "found"}>
-                              {item.status}
-                            </Badge>
+                            {item.is_resolved ? (
+                              <Badge variant="secondary" className="gap-1">
+                                <CheckCircle className="w-3 h-3" />
+                                Resolved
+                              </Badge>
+                            ) : (
+                              <Badge variant={item.status === "lost" ? "lost" : "found"}>
+                                {item.status}
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {item.location} • {format(new Date(item.item_date), "MMM d, yyyy")}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (

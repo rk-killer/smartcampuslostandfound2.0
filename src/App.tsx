@@ -11,6 +11,8 @@ import MyMatch from "./pages/MyMatch";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import ItemDetail from "./pages/ItemDetail";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/item/:id" element={<ItemDetail />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
